@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: brz_starter_ids
+    description: >
+      Bronze preservation of the demo starter ID source. One row per source row;
+      `is_valid_id` records whether the source identifier can progress to silver.
+    columns:
+      - name: id
+        description: Identifier as received from the demo source, including null values.
+        data_tests:
+          - unique
+      - name: is_valid_id
+        description: True when `id` is present and eligible for the silver layer.
+        data_tests:
+          - not_null
+
+  - name: slv_valid_starter_ids
+    description: >
+      Silver-quality starter IDs. One row per non-null source ID, ready for downstream use.
+    columns:
+      - name: id
+        description: Non-null identifier that passed the bronze validity rule.
+        data_tests:
+          - unique
+          - not_null
+
+  - name: gld_starter_id_summary
+    description: >
+      Gold reporting mart for the demo pipeline. One row containing the count of valid IDs
+      available in the silver layer.
+    columns:
+      - name: valid_id_count
+        description: Number of non-null IDs passing the silver data-quality rule.
+        data_tests:
+          - not_null
