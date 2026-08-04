@@ -1,0 +1,46 @@
+version: 2
+
+sources:
+  - name: inscape_raw
+    description: Raw Inscape viewing, identity, and title metadata loaded into Snowflake for this demo.
+    database: MEDIA_PERFORMANCE
+    schema: DBT_DEMO
+    tables:
+      - name: viewing_events
+        identifier: RAW_INSCAPE_VIEWING_EVENTS
+        description: One row per observed media viewing event from an Inscape TV device. The raw load contains known duplicate event IDs; staging retains the latest loaded record per event.
+        columns:
+          - name: EVENT_ID
+            description: Raw event identifier. Duplicate raw rows are deduplicated in staging.
+            data_tests:
+              - not_null
+
+          - name: INSCAPE_TV_KEY
+            description: Inscape device key used to map events to a Blu consumer identifier.
+            data_tests:
+              - not_null
+          - name: START_VIEWED_DATETIME
+            description: Timestamp at which viewing began.
+            data_tests:
+              - not_null
+      - name: blu_device_graph
+        identifier: RAW_BLU_DEVICE_GRAPH
+        description: Device-to-consumer identity graph used to attach Blu IDs to Inscape viewing events.
+        columns:
+          - name: INSCAPE_TV_KEY
+            description: Inscape device key.
+            data_tests:
+              - unique
+              - not_null
+      - name: blu_title_metadata
+        identifier: RAW_BLU_TITLE_METADATA
+        description: Canonical metadata and audience traits for a title and network combination.
+        columns:
+          - name: TITLE
+            description: Canonical program title.
+            data_tests:
+              - not_null
+          - name: NETWORK
+            description: Canonical network name.
+            data_tests:
+              - not_null
