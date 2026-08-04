@@ -1,0 +1,146 @@
+version: 2
+
+models:
+  - name: stg_inscape_viewing_events
+    description: Normalized raw Inscape viewing events. One row per source event.
+    columns:
+      - name: event_id
+        description: Unique viewing event identifier.
+        data_tests:
+          - unique
+          - not_null
+      - name: inscape_tv_key
+        description: Inscape device key associated with the viewing event.
+        data_tests:
+          - not_null
+      - name: start_viewed_datetime
+        description: Timestamp at which viewing began.
+        data_tests:
+          - not_null
+      - name: is_live
+        description: Normalized flag indicating whether the event was watched live.
+        data_tests:
+          - not_null
+
+  - name: stg_blu_device_graph
+    description: Deduplicated device graph used to attach a Blu consumer ID to an Inscape TV key.
+    columns:
+      - name: inscape_tv_key
+        description: Unique Inscape device key.
+        data_tests:
+          - unique
+          - not_null
+      - name: blu_id
+        description: Blu consumer identifier when the device can be mapped.
+
+  - name: stg_blu_title_metadata
+    description: Normalized title metadata at the title and network grain.
+    columns:
+      - name: title
+        description: Normalized program title.
+        data_tests:
+          - not_null
+      - name: network
+        description: Normalized network name.
+        data_tests:
+          - not_null
+
+  - name: int_inscape_media_events
+    description: Consumer-mapped Inscape viewing events enriched with title metadata. One row per event with a non-null Blu ID and a valid, non-negative viewing duration.
+
+    columns:
+      - name: event_id
+        description: Unique viewing event identifier.
+        data_tests:
+          - unique
+          - not_null
+      - name: blu_id
+        description: Consumer Blu ID mapped through the device graph.
+        data_tests:
+          - not_null
+      - name: inscape_tv_key
+        description: Inscape device key mapped to the Blu ID.
+        data_tests:
+          - not_null
+      - name: total_seconds
+        description: Duration of the viewing event in seconds.
+        data_tests:
+          - not_null
+
+  - name: daily_blu_fact_media_summary
+    description: >
+      Daily media consumption summary for audience interest and trait analysis. One row per Blu ID and viewed date. Do not use this model for ownership or demographic determinations.
+    columns:
+      - name: partition_date
+        description: Date used to partition the daily summary.
+        data_tests:
+          - not_null
+      - name: viewed_date
+        description: Calendar date on which media was viewed.
+        data_tests:
+          - not_null
+      - name: blu_id
+        description: Individual consumer Blu ID representing a person.
+        data_tests:
+          - not_null
+      - name: network_array
+        description: Distinct networks viewed by the consumer on the date.
+      - name: title_array
+        description: Distinct titles viewed by the consumer on the date.
+      - name: genre_array
+        description: Distinct content genres viewed by the consumer on the date.
+      - name: input_device_array
+        description: Distinct input devices used on the date.
+      - name: app_service_array
+        description: Distinct app services used on the date.
+
+  - name: daily_blu_fact_media_detail
+    description: >
+      Detailed media consumption activity for audience interest and trait analysis. One row per consumer-mapped viewing event. Do not use this model for ownership or demographic determinations.
+    columns:
+      - name: partition_date
+        description: Date used to partition the event.
+        data_tests:
+          - not_null
+      - name: viewed_date
+        description: Calendar date on which media was viewed.
+        data_tests:
+          - not_null
+      - name: blu_id
+        description: Individual consumer Blu ID representing a person.
+        data_tests:
+          - not_null
+      - name: inscape_tv_key
+        description: Inscape device key.
+        data_tests:
+          - not_null
+      - name: start_viewed_datetime
+        description: Timestamp at which media viewing began.
+        data_tests:
+          - not_null
+      - name: total_seconds
+        description: Total seconds watched for the event.
+        data_tests:
+          - not_null
+      - name: end_viewed_datetime
+        description: Timestamp at which media viewing ended.
+      - name: network
+        description: Network viewed.
+      - name: title
+        description: Media title viewed.
+      - name: genre
+        description: Comma-separated genres from title metadata.
+      - name: input_device
+        description: Input device used to watch media.
+      - name: app_service
+        description: App service used to watch media.
+      - name: live
+        description: True when media was watched live.
+      - name: blu_genre
+        description: Horizon Blu genre.
+      - name: media_type
+        description: Type of media.
+      - name: behavior_cultural_index
+        description: Indicator that the media is associated with cultural behavior traits.
+      - name: behavior_traits
+        description: Audience behavior traits associated with the event.
