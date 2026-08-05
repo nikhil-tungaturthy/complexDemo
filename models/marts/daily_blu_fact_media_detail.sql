@@ -4,6 +4,7 @@ with media_events as (
 )
 
 select
+    event_id,
     to_date(start_viewed_datetime) as partition_date,
     to_date(start_viewed_datetime) as viewed_date,
     blu_id,

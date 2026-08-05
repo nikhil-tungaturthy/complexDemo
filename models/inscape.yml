@@ -97,50 +97,126 @@ models:
   - name: daily_blu_fact_media_detail
     description: >
       Detailed media consumption activity for audience interest and trait analysis. One row per consumer-mapped viewing event. Do not use this model for ownership or demographic determinations.
+    semantic_model:
+      enabled: true
+    agg_time_dimension: viewed_date
     columns:
+      - name: event_id
+        description: Unique viewing event identifier.
+        entity:
+          type: primary
+          name: media_viewing_event
+        data_tests:
+          - unique
+          - not_null
       - name: partition_date
         description: Date used to partition the event.
         data_tests:
           - not_null
       - name: viewed_date
         description: Calendar date on which media was viewed.
+        granularity: day
+        dimension:
+          type: time
         data_tests:
           - not_null
       - name: blu_id
         description: Individual consumer Blu ID representing a person.
+        entity:
+          type: foreign
+          name: consumer
         data_tests:
           - not_null
       - name: inscape_tv_key
         description: Inscape device key.
+        entity:
+          type: foreign
+          name: inscape_tv
         data_tests:
           - not_null
       - name: start_viewed_datetime
         description: Timestamp at which media viewing began.
         data_tests:
           - not_null
+
       - name: total_seconds
         description: Total seconds watched for the event.
         data_tests:
           - not_null
       - name: end_viewed_datetime
         description: Timestamp at which media viewing ended.
+
       - name: network
         description: Network viewed.
+        dimension:
+          type: categorical
       - name: title
         description: Media title viewed.
+        dimension:
+          type: categorical
       - name: genre
         description: Comma-separated genres from title metadata.
+        dimension:
+          type: categorical
       - name: input_device
         description: Input device used to watch media.
+        dimension:
+          type: categorical
       - name: app_service
         description: App service used to watch media.
+        dimension:
+          type: categorical
       - name: live
         description: True when media was watched live.
+        dimension:
+          type: categorical
       - name: blu_genre
         description: Horizon Blu genre.
+        dimension:
+          type: categorical
       - name: media_type
         description: Type of media.
+        dimension:
+          type: categorical
       - name: behavior_cultural_index
         description: Indicator that the media is associated with cultural behavior traits.
+        dimension:
+          type: categorical
       - name: behavior_traits
         description: Audience behavior traits associated with the event.
+        dimension:
+          type: categorical
+    metrics:
+      - name: media_viewing_event_count
+        description: Count of valid consumer-mapped media viewing events.
+        label: Media Viewing Events
+        type: simple
+        agg: count
+        expr: 1
+      - name: unique_media_viewers
+        description: Count of distinct consumers with valid viewing events.
+        label: Unique Media Viewers
+        type: simple
+        agg: count_distinct
+        expr: blu_id
+      - name: total_viewing_seconds
+        description: Total duration of valid consumer-mapped viewing events in seconds.
+        label: Total Viewing Seconds
+        type: simple
+        agg: sum
+        expr: total_seconds
+      - name: average_viewing_seconds
+        description: Average duration of a valid consumer-mapped viewing event in seconds.
+        label: Average Viewing Seconds
+        type: simple
+        agg: average
+        expr: total_seconds
+
+  - name: time_spine_daily
+    description: Daily calendar spine for MetricFlow time-based media engagement analysis.
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        description: Calendar date at daily grain.
+        granularity: day
